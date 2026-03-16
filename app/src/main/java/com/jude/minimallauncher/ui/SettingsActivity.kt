@@ -47,7 +47,11 @@ class SettingsActivity : AppCompatActivity() {
             theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
             root.setBackgroundColor(tv.data)
         } else {
-            root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+            try {
+                root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+            } catch (_: Exception) {
+                root.setBackgroundColor(android.graphics.Color.WHITE)
+            }
         }
 
         findViewById<android.widget.Switch>(R.id.focus_mode).apply {

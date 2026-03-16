@@ -129,6 +129,18 @@ object AppPrefs {
     fun getWallpaper(context: Context): String =
         prefs(context).getString(KEY_WALLPAPER, "SYSTEM") ?: "SYSTEM"
 
+    fun isDarkWallpaper(context: Context): Boolean {
+        val wp = getWallpaper(context)
+        if (wp == "SYSTEM") return false
+        return try {
+            val c = android.graphics.Color.parseColor(wp)
+            val luminance = (0.299 * android.graphics.Color.red(c) + 0.587 * android.graphics.Color.green(c) + 0.114 * android.graphics.Color.blue(c)) / 255
+            luminance < 0.5
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun setHideStatusBar(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_HIDE_STATUS, enabled).apply()
     }

@@ -34,6 +34,8 @@ class LauncherListAdapter(
         val item = items[position]
         holder.name.text = item.label
         holder.dot.visibility = if (NotificationStore.active.contains(item.packageName)) View.VISIBLE else View.GONE
+        val textColor = if (AppPrefs.isDarkWallpaper(holder.itemView.context)) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+        holder.name.setTextColor(textColor)
 
         val limit = AppPrefs.getLimitMinutes(holder.itemView.context, item.packageName)
         val used = UsageLimiter.getTodayUsageMinutes(holder.itemView.context, item.packageName)

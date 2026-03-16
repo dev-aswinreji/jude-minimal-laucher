@@ -72,7 +72,11 @@ class LauncherActivity : AppCompatActivity() {
             theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
             root.setBackgroundColor(tv.data)
         } else {
-            root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+            try {
+                root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+            } catch (_: Exception) {
+                root.setBackgroundColor(android.graphics.Color.WHITE)
+            }
         }
         if (AppPrefs.isMonochrome(this)) {
             root.alpha = 0.9f
@@ -87,6 +91,13 @@ class LauncherActivity : AppCompatActivity() {
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
         usage = findViewById(R.id.usage_summary)
+        val textColor = if (AppPrefs.isDarkWallpaper(this)) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+        clock.setTextColor(textColor)
+        date.setTextColor(textColor)
+        usage.setTextColor(textColor)
+        findViewById<TextView>(R.id.favorites_title).setTextColor(textColor)
+        findViewById<TextView>(R.id.emergency_title).setTextColor(textColor)
+        findViewById<TextView>(R.id.all_apps_btn).setTextColor(textColor)
         emergencyList = findViewById(R.id.emergency_list)
         favoritesList = findViewById(R.id.favorites_list)
         list = findViewById(R.id.app_list)

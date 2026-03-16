@@ -23,7 +23,11 @@ class UsageActivity : AppCompatActivity() {
             theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
             root.setBackgroundColor(tv.data)
         } else {
-            root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+            try {
+                root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+            } catch (_: Exception) {
+                root.setBackgroundColor(android.graphics.Color.WHITE)
+            }
         }
         if (AppPrefs.isMonochrome(this)) {
             root.alpha = 0.9f
