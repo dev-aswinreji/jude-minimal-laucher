@@ -35,6 +35,14 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp" />
 
+    <Switch
+        android:id="@+id/no_telemetry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No‑telemetry mode (block selected apps)"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
     <Button
         android:id="@+id/check_usage"
         android:layout_width="wrap_content"
@@ -64,6 +72,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="App usage"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/notification_access"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notification access"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp" />
 

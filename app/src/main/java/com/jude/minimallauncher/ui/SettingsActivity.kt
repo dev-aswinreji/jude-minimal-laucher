@@ -40,7 +40,15 @@ class SettingsActivity : AppCompatActivity() {
                 .show()
         }
 
-        findViewById<android.view.View>(R.id.root).setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        val root = findViewById<android.view.View>(R.id.root)
+        val wp = AppPrefs.getWallpaper(this)
+        if (wp == "SYSTEM") {
+            val tv = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
+            root.setBackgroundColor(tv.data)
+        } else {
+            root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+        }
 
         findViewById<android.widget.Switch>(R.id.focus_mode).apply {
             isChecked = AppPrefs.isFocusMode(this@SettingsActivity)
@@ -60,6 +68,23 @@ class SettingsActivity : AppCompatActivity() {
             isChecked = AppPrefs.isMonochrome(this@SettingsActivity)
             setOnCheckedChangeListener { _, isChecked ->
                 AppPrefs.setMonochrome(this@SettingsActivity, isChecked)
+            }
+        }
+
+        findViewById<android.widget.Switch>(R.id.no_telemetry).apply {
+            isChecked = AppPrefs.isNoTelemetry(this@SettingsActivity)
+            setOnCheckedChangeListener { _, isChecked ->
+                AppPrefs.setNoTelemetry(this@SettingsActivity, isChecked)
+                if (isChecked) {
+                    val intent = android.net.VpnService.prepare(this@SettingsActivity)
+                    if (intent != null) {
+                        startActivity(intent)
+                    } else {
+                        startService(Intent(this@SettingsActivity, com.jude.minimallauncher.vpn.BlockVpnService::class.java))
+                    }
+                } else {
+                    stopService(Intent(this@SettingsActivity, com.jude.minimallauncher.vpn.BlockVpnService::class.java))
+                }
             }
         }
 
@@ -89,6 +114,10 @@ class SettingsActivity : AppCompatActivity() {
 
         findViewById<android.widget.Button>(R.id.usage_screen).setOnClickListener {
             startActivity(Intent(this, UsageActivity::class.java))
+        }
+
+        findViewById<android.widget.Button>(R.id.notification_access).setOnClickListener {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
 
         findViewById<android.widget.Button>(R.id.wallpaper).setOnClickListener {
@@ -126,11 +155,25 @@ class SettingsActivity : AppCompatActivity() {
             onEmergency = { pkg ->
                 AppPrefs.toggleEmergency(this, pkg)
                 adapter.notifyDataSetChanged()
+            },
+            onNet = { pkg ->
+                AppPrefs.toggleNetBlocked(this, pkg)
+                adapter.notifyDataSetChanged()
             }
         )
         list.adapter = adapter
 
         loadApps()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (AppPrefs.isNoTelemetry(this)) {
+            val intent = android.net.VpnService.prepare(this)
+            if (intent == null) {
+                startService(Intent(this, com.jude.minimallauncher.vpn.BlockVpnService::class.java))
+            }
+        }
     }
 
     private fun loadApps() {

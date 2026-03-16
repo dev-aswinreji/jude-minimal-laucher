@@ -34,6 +34,13 @@
         android:paddingHorizontal="8dp" />
 
     <TextView
+        android:id="@+id/net"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NET"
+        android:paddingHorizontal="8dp" />
+
+    <TextView
         android:id="@+id/limit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

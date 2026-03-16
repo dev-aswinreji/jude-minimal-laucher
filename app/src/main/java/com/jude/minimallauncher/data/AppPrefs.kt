@@ -18,6 +18,8 @@ object AppPrefs {
     private const val KEY_FOCUS_NOW = "focus_now"
     private const val KEY_FOCUS_START = "focus_start"
     private const val KEY_FOCUS_END = "focus_end"
+    private const val KEY_NET_BLOCK = "net_block"
+    private const val KEY_NO_TELEMETRY = "no_telemetry"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -91,6 +93,22 @@ object AppPrefs {
             minutes >= start || minutes <= end
         }
     }
+
+    fun getNetBlocked(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_NET_BLOCK, emptySet()) ?: emptySet()
+
+    fun toggleNetBlocked(context: Context, pkg: String) {
+        val set = getNetBlocked(context).toMutableSet()
+        if (set.contains(pkg)) set.remove(pkg) else set.add(pkg)
+        prefs(context).edit().putStringSet(KEY_NET_BLOCK, set).apply()
+    }
+
+    fun setNoTelemetry(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_NO_TELEMETRY, enabled).apply()
+    }
+
+    fun isNoTelemetry(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_NO_TELEMETRY, false)
 
     fun setFocusMode(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_FOCUS_MODE, enabled).apply()

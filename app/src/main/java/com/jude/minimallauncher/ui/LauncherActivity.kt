@@ -22,6 +22,13 @@ import java.util.Locale
 
 class LauncherActivity : AppCompatActivity() {
 
+    private val notifReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
+            adapter.notifyDataSetChanged()
+            favoritesAdapter.notifyDataSetChanged()
+        }
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -46,10 +53,13 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var adapter: LauncherListAdapter
     private lateinit var favoritesList: RecyclerView
     private lateinit var favoritesAdapter: LauncherListAdapter
+    private lateinit var emergencyList: RecyclerView
+    private lateinit var emergencyAdapter: LauncherListAdapter
     private lateinit var usage: TextView
     private var downY: Float = 0f
     private var downTime: Long = 0L
     private var allApps: List<AppInfo> = emptyList()
+    private val launchCache = mutableMapOf<String, Intent>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +87,15 @@ class LauncherActivity : AppCompatActivity() {
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
         usage = findViewById(R.id.usage_summary)
+        emergencyList = findViewById(R.id.emergency_list)
         favoritesList = findViewById(R.id.favorites_list)
         list = findViewById(R.id.app_list)
+
+        emergencyList.layoutManager = LinearLayoutManager(this)
+        emergencyAdapter = LauncherListAdapter { appInfo ->
+            handleLaunch(appInfo.packageName)
+        }
+        emergencyList.adapter = emergencyAdapter
 
         favoritesList.layoutManager = LinearLayoutManager(this)
         favoritesAdapter = LauncherListAdapter { appInfo ->
@@ -111,9 +128,15 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        registerReceiver(notifReceiver, android.content.IntentFilter("com.jude.minimallauncher.NOTIF_CHANGED"))
         updateClock()
         updateUsageSummary()
         loadApps()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(notifReceiver)
     }
 
     private fun updateClock() {
@@ -159,6 +182,7 @@ class LauncherActivity : AppCompatActivity() {
                 val info = pm.getApplicationInfo(pkg, 0)
                 val label = pm.getApplicationLabel(info).toString()
                 val icon = pm.getApplicationIcon(info)
+                launchCache[pkg] = pm.getLaunchIntentForPackage(pkg)
                 AppInfo(label, pkg, icon)
             } catch (e: Exception) {
                 null
@@ -166,7 +190,13 @@ class LauncherActivity : AppCompatActivity() {
         }.sortedBy { it.label.lowercase(Locale.getDefault()) }
 
         val favItems = allApps.filter { favorites.contains(it.packageName) }
+        val emergencyItems = allApps.filter { emergency.contains(it.packageName) }
         favoritesAdapter.submit(favItems)
+        emergencyAdapter.submit(emergencyItems)
+        findViewById<android.view.View>(R.id.favorites_title).visibility = if (favItems.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE
+        favoritesList.visibility = if (favItems.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE
+        findViewById<android.view.View>(R.id.emergency_title).visibility = if (emergencyItems.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE
+        emergencyList.visibility = if (emergencyItems.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE
         adapter.submit(allApps)
     }
 
@@ -225,7 +255,7 @@ class LauncherActivity : AppCompatActivity() {
     }
 
     private fun launchApp(packageName: String) {
-        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+        val launchIntent = launchCache[packageName] ?: packageManager.getLaunchIntentForPackage(packageName)
         if (launchIntent != null) {
             startActivity(launchIntent)
         }

@@ -14,7 +14,8 @@ class SettingsListAdapter(
     private val onToggle: (String, Boolean) -> Unit,
     private val onLimit: (String) -> Unit,
     private val onFavorite: (String) -> Unit,
-    private val onEmergency: (String) -> Unit
+    private val onEmergency: (String) -> Unit,
+    private val onNet: (String) -> Unit
 ) : RecyclerView.Adapter<SettingsListAdapter.Holder>() {
 
     private val items = mutableListOf<SettingsAppInfo>()
@@ -49,10 +50,13 @@ class SettingsListAdapter(
 
         val favorites = AppPrefs.getFavorites(holder.itemView.context)
         val emergency = AppPrefs.getEmergencyApps(holder.itemView.context)
+        val netBlocked = AppPrefs.getNetBlocked(holder.itemView.context)
         holder.fav.text = if (favorites.contains(item.packageName)) "★" else "☆"
         holder.emergency.text = if (emergency.contains(item.packageName)) "⚠" else "!"
+        holder.net.text = if (netBlocked.contains(item.packageName)) "NET✕" else "NET"
         holder.fav.setOnClickListener { onFavorite(item.packageName) }
         holder.emergency.setOnClickListener { onEmergency(item.packageName) }
+        holder.net.setOnClickListener { onNet(item.packageName) }
 
         val limit = AppPrefs.getLimitMinutes(holder.itemView.context, item.packageName)
         holder.limit.text = if (limit == null) "Limit" else {
@@ -69,5 +73,6 @@ class SettingsListAdapter(
         val limit: TextView = view.findViewById(R.id.limit)
         val fav: TextView = view.findViewById(R.id.fav)
         val emergency: TextView = view.findViewById(R.id.emergency)
+        val net: TextView = view.findViewById(R.id.net)
     }
 }
