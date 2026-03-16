@@ -9,6 +9,9 @@ object AppPrefs {
     private const val KEY_PIN_ENABLED = "pin_enabled"
     private const val KEY_PIN_VALUE = "pin_value"
     private const val KEY_LIMIT_PREFIX = "limit_"
+    private const val KEY_FAVORITES = "favorites"
+    private const val KEY_EMERGENCY = "emergency"
+    private const val KEY_FOCUS_MODE = "focus_mode"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -47,4 +50,29 @@ object AppPrefs {
     }
 
     fun getPin(context: Context): String? = prefs(context).getString(KEY_PIN_VALUE, "0000")
+
+    fun getFavorites(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
+
+    fun toggleFavorite(context: Context, pkg: String) {
+        val set = getFavorites(context).toMutableSet()
+        if (set.contains(pkg)) set.remove(pkg) else set.add(pkg)
+        prefs(context).edit().putStringSet(KEY_FAVORITES, set).apply()
+    }
+
+    fun getEmergencyApps(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_EMERGENCY, emptySet()) ?: emptySet()
+
+    fun toggleEmergency(context: Context, pkg: String) {
+        val set = getEmergencyApps(context).toMutableSet()
+        if (set.contains(pkg)) set.remove(pkg) else set.add(pkg)
+        prefs(context).edit().putStringSet(KEY_EMERGENCY, set).apply()
+    }
+
+    fun isFocusMode(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FOCUS_MODE, false)
+
+    fun setFocusMode(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_FOCUS_MODE, enabled).apply()
+    }
 }

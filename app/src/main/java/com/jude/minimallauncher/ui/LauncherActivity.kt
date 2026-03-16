@@ -7,9 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.text.format.DateFormat
-import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,15 +17,34 @@ import com.jude.minimallauncher.data.AppPrefs
 import com.jude.minimallauncher.data.UsageLimiter
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.abs
 
 class LauncherActivity : AppCompatActivity() {
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downY = ev.y
+                downTime = System.currentTimeMillis()
+            }
+            MotionEvent.ACTION_UP -> {
+                val deltaY = downY - ev.y
+                val dt = (System.currentTimeMillis() - downTime).coerceAtLeast(1)
+                val velocity = deltaY / dt
+                if (deltaY > 100 && velocity > 0.5f) {
+                    startActivity(Intent(this@LauncherActivity, AllAppsActivity::class.java))
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 
     private lateinit var clock: TextView
     private lateinit var date: TextView
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
-    private lateinit var gestureDetector: GestureDetector
+    private lateinit var usage: TextView
+    private var downY: Float = 0f
+    private var downTime: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +52,7 @@ class LauncherActivity : AppCompatActivity() {
 
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
+        usage = findViewById(R.id.usage_summary)
         list = findViewById(R.id.app_list)
 
         list.layoutManager = LinearLayoutManager(this)
@@ -46,25 +64,10 @@ class LauncherActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.settings_btn).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        findViewById<TextView>(R.id.swipe_hint).setOnClickListener {
+        findViewById<TextView>(R.id.all_apps_btn).setOnClickListener {
             startActivity(Intent(this, AllAppsActivity::class.java))
         }
 
-        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                val deltaY = e1.y - e2.y
-                if (deltaY > 100 && abs(velocityY) > 200) {
-                    startActivity(Intent(this@LauncherActivity, AllAppsActivity::class.java))
-                    return true
-                }
-                return false
-            }
-        })
-
-        findViewById<View>(R.id.root).setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
-            true
-        }
 
         ensureUsageAccess()
     }
@@ -72,6 +75,7 @@ class LauncherActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateClock()
+        updateUsageSummary()
         loadApps()
     }
 
@@ -81,6 +85,14 @@ class LauncherActivity : AppCompatActivity() {
         val dateText = DateFormat.format("EEE, MMM d", now).toString()
         clock.text = time
         date.text = dateText
+    }
+
+    private fun updateUsageSummary() {
+        val whitelist = AppPrefs.getWhitelistedPackages(this)
+        val total = whitelist.sumOf { pkg ->
+            UsageLimiter.getTodayUsageMinutes(this, pkg)
+        }
+        usage.text = "Today: ${total} min"
     }
 
     private fun ensureUsageAccess() {
@@ -105,8 +117,15 @@ class LauncherActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
             return
         }
+
+        val focusMode = AppPrefs.isFocusMode(this)
+        val favorites = AppPrefs.getFavorites(this)
+        val emergency = AppPrefs.getEmergencyApps(this)
+        val base = if (focusMode && favorites.isNotEmpty()) favorites else whitelist
+        val merged = (base + emergency).toSet()
+
         val pm = packageManager
-        val apps = whitelist.mapNotNull { pkg ->
+        val apps = merged.mapNotNull { pkg ->
             try {
                 val info = pm.getApplicationInfo(pkg, 0)
                 val label = pm.getApplicationLabel(info).toString()

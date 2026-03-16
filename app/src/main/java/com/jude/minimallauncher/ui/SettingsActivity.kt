@@ -1,7 +1,9 @@
 package com.jude.minimallauncher.ui
 
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +40,17 @@ class SettingsActivity : AppCompatActivity() {
                 .show()
         }
 
+        findViewById<android.widget.Switch>(R.id.focus_mode).apply {
+            isChecked = AppPrefs.isFocusMode(this@SettingsActivity)
+            setOnCheckedChangeListener { _, isChecked ->
+                AppPrefs.setFocusMode(this@SettingsActivity, isChecked)
+            }
+        }
+
+        findViewById<android.widget.Button>(R.id.check_usage).setOnClickListener {
+            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+        }
+
         list = findViewById(R.id.apps_list)
         list.layoutManager = LinearLayoutManager(this)
         adapter = SettingsListAdapter(
@@ -46,6 +59,14 @@ class SettingsActivity : AppCompatActivity() {
             },
             onLimit = { pkg ->
                 showLimitDialog(pkg)
+            },
+            onFavorite = { pkg ->
+                AppPrefs.toggleFavorite(this, pkg)
+                adapter.notifyDataSetChanged()
+            },
+            onEmergency = { pkg ->
+                AppPrefs.toggleEmergency(this, pkg)
+                adapter.notifyDataSetChanged()
             }
         )
         list.adapter = adapter

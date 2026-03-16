@@ -12,7 +12,9 @@ import com.jude.minimallauncher.data.AppPrefs
 
 class SettingsListAdapter(
     private val onToggle: (String, Boolean) -> Unit,
-    private val onLimit: (String) -> Unit
+    private val onLimit: (String) -> Unit,
+    private val onFavorite: (String) -> Unit,
+    private val onEmergency: (String) -> Unit
 ) : RecyclerView.Adapter<SettingsListAdapter.Holder>() {
 
     private val items = mutableListOf<SettingsAppInfo>()
@@ -45,6 +47,13 @@ class SettingsListAdapter(
         }
         holder.limit.setOnClickListener { onLimit(item.packageName) }
 
+        val favorites = AppPrefs.getFavorites(holder.itemView.context)
+        val emergency = AppPrefs.getEmergencyApps(holder.itemView.context)
+        holder.fav.text = if (favorites.contains(item.packageName)) "★" else "☆"
+        holder.emergency.text = if (emergency.contains(item.packageName)) "⚠" else "!"
+        holder.fav.setOnClickListener { onFavorite(item.packageName) }
+        holder.emergency.setOnClickListener { onEmergency(item.packageName) }
+
         val limit = AppPrefs.getLimitMinutes(holder.itemView.context, item.packageName)
         holder.limit.text = if (limit == null) "Limit" else {
             val soft = limit.softMinutes?.let { "S:$it" } ?: ""
@@ -58,5 +67,7 @@ class SettingsListAdapter(
         val name: TextView = view.findViewById(R.id.name)
         val toggle: Switch = view.findViewById(R.id.toggle)
         val limit: TextView = view.findViewById(R.id.limit)
+        val fav: TextView = view.findViewById(R.id.fav)
+        val emergency: TextView = view.findViewById(R.id.emergency)
     }
 }

@@ -11,6 +11,7 @@ class AllAppsActivity : AppCompatActivity() {
 
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
+    private var allApps: List<AppInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,12 +25,20 @@ class AllAppsActivity : AppCompatActivity() {
         }
         list.adapter = adapter
 
+        findViewById<android.widget.EditText>(R.id.search).addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterApps(s?.toString().orEmpty())
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
         loadAllApps()
     }
 
     private fun loadAllApps() {
         val pm = packageManager
-        val apps = pm.getInstalledApplications(0)
+        allApps = pm.getInstalledApplications(0)
             .mapNotNull { info ->
                 val intent = pm.getLaunchIntentForPackage(info.packageName) ?: return@mapNotNull null
                 val label = pm.getApplicationLabel(info).toString()
@@ -38,6 +47,15 @@ class AllAppsActivity : AppCompatActivity() {
             }
             .sortedBy { it.label.lowercase(Locale.getDefault()) }
 
-        adapter.submit(apps)
+        adapter.submit(allApps)
+    }
+
+    private fun filterApps(query: String) {
+        val q = query.trim().lowercase(Locale.getDefault())
+        if (q.isEmpty()) {
+            adapter.submit(allApps)
+        } else {
+            adapter.submit(allApps.filter { it.label.lowercase(Locale.getDefault()).contains(q) })
+        }
     }
 }

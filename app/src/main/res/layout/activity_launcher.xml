@@ -49,18 +49,25 @@
             android:textSize="16sp" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/usage_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Today: 0 min"
+        android:paddingTop="8dp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/app_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="8dp" />
 
     <TextView
-        android:id="@+id/swipe_hint"
+        android:id="@+id/all_apps_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Swipe up for all apps"
+        android:text="All apps"
         android:gravity="center"
         android:paddingTop="8dp" />
 
