@@ -37,14 +37,11 @@ class LauncherListAdapter(
         val textColor = if (AppPrefs.isDarkWallpaper(holder.itemView.context)) android.graphics.Color.WHITE else android.graphics.Color.BLACK
         holder.name.setTextColor(textColor)
 
-        holder.usage.progress = 0
-
         holder.itemView.setOnClickListener { onClick(item) }
     }
 
     class Holder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.name)
         val dot: View = view.findViewById(R.id.dot)
-        val usage: android.widget.ProgressBar = view.findViewById(R.id.usage_bar)
     }
 }
