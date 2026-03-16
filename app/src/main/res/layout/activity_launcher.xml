@@ -56,19 +56,24 @@
         android:text="Today: 0 min"
         android:paddingTop="8dp" />
 
-    <EditText
-        android:id="@+id/home_search"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Search"
-        android:layout_marginTop="8dp" />
-
     <Button
         android:id="@+id/focus_now"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Focus now"
         android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/favorites_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Favorites"
+        android:paddingTop="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favorites_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/app_list"

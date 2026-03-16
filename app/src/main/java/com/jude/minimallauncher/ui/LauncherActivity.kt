@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.format.DateFormat
 import android.view.MotionEvent
-import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsCompat
@@ -45,8 +44,9 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var date: TextView
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
+    private lateinit var favoritesList: RecyclerView
+    private lateinit var favoritesAdapter: LauncherListAdapter
     private lateinit var usage: TextView
-    private lateinit var search: EditText
     private var downY: Float = 0f
     private var downTime: Long = 0L
     private var allApps: List<AppInfo> = emptyList()
@@ -77,8 +77,14 @@ class LauncherActivity : AppCompatActivity() {
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
         usage = findViewById(R.id.usage_summary)
-        search = findViewById(R.id.home_search)
+        favoritesList = findViewById(R.id.favorites_list)
         list = findViewById(R.id.app_list)
+
+        favoritesList.layoutManager = LinearLayoutManager(this)
+        favoritesAdapter = LauncherListAdapter { appInfo ->
+            handleLaunch(appInfo.packageName)
+        }
+        favoritesList.adapter = favoritesAdapter
 
         list.layoutManager = LinearLayoutManager(this)
         adapter = LauncherListAdapter { appInfo ->
@@ -98,14 +104,6 @@ class LauncherActivity : AppCompatActivity() {
             AppPrefs.setFocusNow(this, enabled)
             loadApps()
         }
-
-        search.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                filterApps(s?.toString().orEmpty())
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
 
 
         ensureUsageAccess()
@@ -165,11 +163,11 @@ class LauncherActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 null
             }
-        }.sortedWith(compareBy<AppInfo> {
-            if (favorites.contains(it.packageName)) 0 else 1
-        }.thenBy { it.label.lowercase(Locale.getDefault()) })
+        }.sortedBy { it.label.lowercase(Locale.getDefault()) }
 
-        filterApps(search.text?.toString().orEmpty())
+        val favItems = allApps.filter { favorites.contains(it.packageName) }
+        favoritesAdapter.submit(favItems)
+        adapter.submit(allApps)
     }
 
     private fun handleLaunch(packageName: String) {
@@ -216,12 +214,6 @@ class LauncherActivity : AppCompatActivity() {
         PinDialog.show(this, message) { ok ->
             if (ok) launchApp(packageName)
         }
-    }
-
-    private fun filterApps(query: String) {
-        val q = query.trim().lowercase(Locale.getDefault())
-        val items = if (q.isEmpty()) allApps else allApps.filter { it.label.lowercase(Locale.getDefault()).contains(q) }
-        adapter.submit(items)
     }
 
     private fun updateUsageSummary() {
