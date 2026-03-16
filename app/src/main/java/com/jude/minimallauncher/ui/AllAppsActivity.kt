@@ -16,6 +16,7 @@ class AllAppsActivity : AppCompatActivity() {
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
     private var allApps: List<AppInfo> = emptyList()
+    private var filteredApps: List<AppInfo> = emptyList()
     private var downY: Float = 0f
     private var downTime: Long = 0L
 
@@ -68,13 +69,23 @@ class AllAppsActivity : AppCompatActivity() {
         }
         list.adapter = adapter
 
-        findViewById<android.widget.EditText>(R.id.search).addTextChangedListener(object : android.text.TextWatcher {
+        val search = findViewById<android.widget.EditText>(R.id.search)
+        search.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 filterApps(s?.toString().orEmpty())
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+        search.setOnEditorActionListener { _, actionId, _ ->
+            if (AppPrefs.isAutoLaunchSingle(this) && filteredApps.size == 1) {
+                val intent = packageManager.getLaunchIntentForPackage(filteredApps[0].packageName)
+                if (intent != null) startActivity(intent)
+                true
+            } else {
+                false
+            }
+        }
 
         loadAllApps()
     }
@@ -90,15 +101,17 @@ class AllAppsActivity : AppCompatActivity() {
             }
             .sortedBy { it.label.lowercase(Locale.getDefault()) }
 
+        filteredApps = allApps
         adapter.submit(allApps)
     }
 
     private fun filterApps(query: String) {
         val q = query.trim().lowercase(Locale.getDefault())
-        if (q.isEmpty()) {
-            adapter.submit(allApps)
+        filteredApps = if (q.isEmpty()) {
+            allApps
         } else {
-            adapter.submit(allApps.filter { it.label.lowercase(Locale.getDefault()).contains(q) })
+            allApps.filter { it.label.lowercase(Locale.getDefault()).contains(q) }
         }
+        adapter.submit(filteredApps)
     }
 }

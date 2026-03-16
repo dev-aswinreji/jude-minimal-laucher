@@ -120,6 +120,13 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
 
+        findViewById<android.widget.Switch>(R.id.auto_launch_single).apply {
+            isChecked = AppPrefs.isAutoLaunchSingle(this@SettingsActivity)
+            setOnCheckedChangeListener { _, isChecked ->
+                AppPrefs.setAutoLaunchSingle(this@SettingsActivity, isChecked)
+            }
+        }
+
         findViewById<android.widget.Button>(R.id.wallpaper).setOnClickListener {
             val options = arrayOf("System", "White", "Black", "Gray", "Blue", "Green")
             val values = arrayOf("SYSTEM", "#FFFFFF", "#000000", "#E0E0E0", "#1E88E5", "#2E7D32")

@@ -20,6 +20,7 @@ object AppPrefs {
     private const val KEY_FOCUS_END = "focus_end"
     private const val KEY_NET_BLOCK = "net_block"
     private const val KEY_NO_TELEMETRY = "no_telemetry"
+    private const val KEY_AUTO_LAUNCH = "auto_launch_single"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -109,6 +110,13 @@ object AppPrefs {
 
     fun isNoTelemetry(context: Context): Boolean =
         prefs(context).getBoolean(KEY_NO_TELEMETRY, false)
+
+    fun setAutoLaunchSingle(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_AUTO_LAUNCH, enabled).apply()
+    }
+
+    fun isAutoLaunchSingle(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_AUTO_LAUNCH, false)
 
     fun setFocusMode(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_FOCUS_MODE, enabled).apply()

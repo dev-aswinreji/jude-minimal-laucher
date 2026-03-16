@@ -83,6 +83,14 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp" />
 
+    <Switch
+        android:id="@+id/auto_launch_single"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Auto‑launch if single result (All Apps)"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
     <Button
         android:id="@+id/set_pin"
         android:layout_width="wrap_content"
