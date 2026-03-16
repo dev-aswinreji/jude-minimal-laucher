@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -23,6 +24,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Check usage access"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/wallpaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set wallpaper color"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp" />
 

@@ -40,6 +40,8 @@ class SettingsActivity : AppCompatActivity() {
                 .show()
         }
 
+        findViewById<android.view.View>(R.id.root).setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+
         findViewById<android.widget.Switch>(R.id.focus_mode).apply {
             isChecked = AppPrefs.isFocusMode(this@SettingsActivity)
             setOnCheckedChangeListener { _, isChecked ->
@@ -49,6 +51,19 @@ class SettingsActivity : AppCompatActivity() {
 
         findViewById<android.widget.Button>(R.id.check_usage).setOnClickListener {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+        }
+
+        findViewById<android.widget.Button>(R.id.wallpaper).setOnClickListener {
+            val options = arrayOf("White", "Black", "Gray", "Blue", "Green")
+            val values = arrayOf("#FFFFFF", "#000000", "#E0E0E0", "#1E88E5", "#2E7D32")
+            AlertDialog.Builder(this)
+                .setTitle("Wallpaper color")
+                .setItems(options) { _, which ->
+                    AppPrefs.setWallpaper(this, values[which])
+                    findViewById<android.view.View>(R.id.root)
+                        .setBackgroundColor(android.graphics.Color.parseColor(values[which]))
+                }
+                .show()
         }
 
         list = findViewById(R.id.apps_list)

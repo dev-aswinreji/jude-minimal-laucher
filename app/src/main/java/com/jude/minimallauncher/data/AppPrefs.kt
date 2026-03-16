@@ -12,6 +12,7 @@ object AppPrefs {
     private const val KEY_FAVORITES = "favorites"
     private const val KEY_EMERGENCY = "emergency"
     private const val KEY_FOCUS_MODE = "focus_mode"
+    private const val KEY_WALLPAPER = "wallpaper"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -75,4 +76,11 @@ object AppPrefs {
     fun setFocusMode(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_FOCUS_MODE, enabled).apply()
     }
+
+    fun setWallpaper(context: Context, color: String) {
+        prefs(context).edit().putString(KEY_WALLPAPER, color).apply()
+    }
+
+    fun getWallpaper(context: Context): String =
+        prefs(context).getString(KEY_WALLPAPER, "#FFFFFF") ?: "#FFFFFF"
 }

@@ -50,6 +50,7 @@ class LauncherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launcher)
 
+        findViewById<android.view.View>(R.id.root).setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
         usage = findViewById(R.id.usage_summary)

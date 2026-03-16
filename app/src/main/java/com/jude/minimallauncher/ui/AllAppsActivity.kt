@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jude.minimallauncher.R
+import com.jude.minimallauncher.data.AppPrefs
 import java.util.Locale
 
 class AllAppsActivity : AppCompatActivity() {
@@ -17,6 +18,7 @@ class AllAppsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_apps)
 
+        findViewById<android.view.View>(R.id.root).setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
         list = findViewById(R.id.all_apps_list)
         list.layoutManager = LinearLayoutManager(this)
         adapter = LauncherListAdapter { appInfo ->
