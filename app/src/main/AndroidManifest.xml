@@ -44,14 +44,6 @@
             android:permission="android.permission.BIND_VPN_SERVICE"
             android:exported="false" />
 
-        <service
-            android:name=".notify.NotificationDotService"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
 
         <receiver
             android:name=".limits.BootReceiver"

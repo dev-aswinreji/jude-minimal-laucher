@@ -22,12 +22,6 @@ import java.util.Locale
 
 class LauncherActivity : AppCompatActivity() {
 
-    private val notifReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
-            adapter.notifyDataSetChanged()
-            favoritesAdapter.notifyDataSetChanged()
-        }
-    }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
@@ -139,16 +133,11 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(notifReceiver, android.content.IntentFilter("com.jude.minimallauncher.NOTIF_CHANGED"))
         updateClock()
         updateUsageSummary()
         loadApps()
     }
 
-    override fun onPause() {
-        super.onPause()
-        unregisterReceiver(notifReceiver)
-    }
 
     private fun updateClock() {
         val now = Calendar.getInstance()

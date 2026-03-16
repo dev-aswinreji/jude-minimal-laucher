@@ -79,16 +79,6 @@ class SettingsActivity : AppCompatActivity() {
             isChecked = AppPrefs.isNoTelemetry(this@SettingsActivity)
             setOnCheckedChangeListener { _, isChecked ->
                 AppPrefs.setNoTelemetry(this@SettingsActivity, isChecked)
-                if (isChecked) {
-                    val intent = android.net.VpnService.prepare(this@SettingsActivity)
-                    if (intent != null) {
-                        startActivity(intent)
-                    } else {
-                        startService(Intent(this@SettingsActivity, com.jude.minimallauncher.vpn.BlockVpnService::class.java))
-                    }
-                } else {
-                    stopService(Intent(this@SettingsActivity, com.jude.minimallauncher.vpn.BlockVpnService::class.java))
-                }
             }
         }
 

@@ -33,16 +33,11 @@ class LauncherListAdapter(
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val item = items[position]
         holder.name.text = item.label
-        holder.dot.visibility = if (NotificationStore.active.contains(item.packageName)) View.VISIBLE else View.GONE
+        holder.dot.visibility = View.GONE
         val textColor = if (AppPrefs.isDarkWallpaper(holder.itemView.context)) android.graphics.Color.WHITE else android.graphics.Color.BLACK
         holder.name.setTextColor(textColor)
 
-        val limit = AppPrefs.getLimitMinutes(holder.itemView.context, item.packageName)
-        val used = UsageLimiter.getTodayUsageMinutes(holder.itemView.context, item.packageName)
-        val percent = if (limit?.hardMinutes != null && limit.hardMinutes > 0) {
-            (used * 100 / limit.hardMinutes).coerceIn(0, 100)
-        } else 0
-        holder.usage.progress = percent
+        holder.usage.progress = 0
 
         holder.itemView.setOnClickListener { onClick(item) }
     }
