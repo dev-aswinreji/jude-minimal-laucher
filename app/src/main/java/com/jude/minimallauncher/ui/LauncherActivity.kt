@@ -182,7 +182,8 @@ class LauncherActivity : AppCompatActivity() {
                 val info = pm.getApplicationInfo(pkg, 0)
                 val label = pm.getApplicationLabel(info).toString()
                 val icon = pm.getApplicationIcon(info)
-                launchCache[pkg] = pm.getLaunchIntentForPackage(pkg)
+                val intent = pm.getLaunchIntentForPackage(pkg)
+                if (intent != null) launchCache[pkg] = intent
                 AppInfo(label, pkg, icon)
             } catch (e: Exception) {
                 null
