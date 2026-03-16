@@ -13,6 +13,8 @@ object AppPrefs {
     private const val KEY_EMERGENCY = "emergency"
     private const val KEY_FOCUS_MODE = "focus_mode"
     private const val KEY_WALLPAPER = "wallpaper"
+    private const val KEY_HIDE_STATUS = "hide_status"
+    private const val KEY_MONO = "mono"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -83,4 +85,18 @@ object AppPrefs {
 
     fun getWallpaper(context: Context): String =
         prefs(context).getString(KEY_WALLPAPER, "#FFFFFF") ?: "#FFFFFF"
+
+    fun setHideStatusBar(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_HIDE_STATUS, enabled).apply()
+    }
+
+    fun isHideStatusBar(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HIDE_STATUS, false)
+
+    fun setMonochrome(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_MONO, enabled).apply()
+    }
+
+    fun isMonochrome(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_MONO, false)
 }

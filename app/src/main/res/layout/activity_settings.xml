@@ -19,6 +19,22 @@
         android:text="Focus mode (show favorites only)"
         android:layout_marginStart="16dp" />
 
+    <Switch
+        android:id="@+id/hide_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide status bar"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <Switch
+        android:id="@+id/mono"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Monochrome mode"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
     <Button
         android:id="@+id/check_usage"
         android:layout_width="wrap_content"

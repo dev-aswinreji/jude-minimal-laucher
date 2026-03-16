@@ -49,6 +49,20 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<android.widget.Switch>(R.id.hide_status).apply {
+            isChecked = AppPrefs.isHideStatusBar(this@SettingsActivity)
+            setOnCheckedChangeListener { _, isChecked ->
+                AppPrefs.setHideStatusBar(this@SettingsActivity, isChecked)
+            }
+        }
+
+        findViewById<android.widget.Switch>(R.id.mono).apply {
+            isChecked = AppPrefs.isMonochrome(this@SettingsActivity)
+            setOnCheckedChangeListener { _, isChecked ->
+                AppPrefs.setMonochrome(this@SettingsActivity, isChecked)
+            }
+        }
+
         findViewById<android.widget.Button>(R.id.check_usage).setOnClickListener {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }

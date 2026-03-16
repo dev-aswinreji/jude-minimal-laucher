@@ -42,7 +42,6 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var date: TextView
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
-    private lateinit var usage: TextView
     private var downY: Float = 0f
     private var downTime: Long = 0L
 
@@ -50,10 +49,18 @@ class LauncherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launcher)
 
-        findViewById<android.view.View>(R.id.root).setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        val root = findViewById<android.view.View>(R.id.root)
+        root.setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        if (AppPrefs.isMonochrome(this)) {
+            root.alpha = 0.9f
+        }
+        if (AppPrefs.isHideStatusBar(this)) {
+            window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+        } else {
+            window.decorView.systemUiVisibility = 0
+        }
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
-        usage = findViewById(R.id.usage_summary)
         list = findViewById(R.id.app_list)
 
         list.layoutManager = LinearLayoutManager(this)
@@ -76,7 +83,6 @@ class LauncherActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateClock()
-        updateUsageSummary()
         loadApps()
     }
 
@@ -86,14 +92,6 @@ class LauncherActivity : AppCompatActivity() {
         val dateText = DateFormat.format("EEE, MMM d", now).toString()
         clock.text = time
         date.text = dateText
-    }
-
-    private fun updateUsageSummary() {
-        val whitelist = AppPrefs.getWhitelistedPackages(this)
-        val total = whitelist.sumOf { pkg ->
-            UsageLimiter.getTodayUsageMinutes(this, pkg)
-        }
-        usage.text = "Today: ${total} min"
     }
 
     private fun ensureUsageAccess() {

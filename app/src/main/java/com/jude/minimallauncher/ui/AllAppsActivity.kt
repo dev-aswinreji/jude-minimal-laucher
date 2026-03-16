@@ -1,6 +1,7 @@
 package com.jude.minimallauncher.ui
 
 import android.os.Bundle
+import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,12 +14,41 @@ class AllAppsActivity : AppCompatActivity() {
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
     private var allApps: List<AppInfo> = emptyList()
+    private var downY: Float = 0f
+    private var downTime: Long = 0L
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downY = ev.y
+                downTime = System.currentTimeMillis()
+            }
+            MotionEvent.ACTION_UP -> {
+                val deltaY = ev.y - downY
+                val dt = (System.currentTimeMillis() - downTime).coerceAtLeast(1)
+                val velocity = deltaY / dt
+                if (deltaY > 100 && velocity > 0.5f) {
+                    finish()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_apps)
 
-        findViewById<android.view.View>(R.id.root).setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        val root = findViewById<android.view.View>(R.id.root)
+        root.setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        if (AppPrefs.isMonochrome(this)) {
+            root.alpha = 0.9f
+        }
+        if (AppPrefs.isHideStatusBar(this)) {
+            window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+        } else {
+            window.decorView.systemUiVisibility = 0
+        }
         list = findViewById(R.id.all_apps_list)
         list.layoutManager = LinearLayoutManager(this)
         adapter = LauncherListAdapter { appInfo ->
