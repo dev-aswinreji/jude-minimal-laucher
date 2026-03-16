@@ -67,15 +67,45 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
 
+        findViewById<android.widget.Button>(R.id.focus_schedule).setOnClickListener {
+            val view = layoutInflater.inflate(R.layout.dialog_focus_schedule, null)
+            val startH = view.findViewById<android.widget.EditText>(R.id.start_h)
+            val startM = view.findViewById<android.widget.EditText>(R.id.start_m)
+            val endH = view.findViewById<android.widget.EditText>(R.id.end_h)
+            val endM = view.findViewById<android.widget.EditText>(R.id.end_m)
+            AlertDialog.Builder(this)
+                .setTitle("Focus schedule (24h)")
+                .setView(view)
+                .setPositiveButton("Save") { _, _ ->
+                    val sh = startH.text.toString().toIntOrNull() ?: 0
+                    val sm = startM.text.toString().toIntOrNull() ?: 0
+                    val eh = endH.text.toString().toIntOrNull() ?: 0
+                    val em = endM.text.toString().toIntOrNull() ?: 0
+                    AppPrefs.setFocusSchedule(this, sh * 60 + sm, eh * 60 + em)
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        findViewById<android.widget.Button>(R.id.usage_screen).setOnClickListener {
+            startActivity(Intent(this, UsageActivity::class.java))
+        }
+
         findViewById<android.widget.Button>(R.id.wallpaper).setOnClickListener {
-            val options = arrayOf("White", "Black", "Gray", "Blue", "Green")
-            val values = arrayOf("#FFFFFF", "#000000", "#E0E0E0", "#1E88E5", "#2E7D32")
+            val options = arrayOf("System", "White", "Black", "Gray", "Blue", "Green")
+            val values = arrayOf("SYSTEM", "#FFFFFF", "#000000", "#E0E0E0", "#1E88E5", "#2E7D32")
             AlertDialog.Builder(this)
                 .setTitle("Wallpaper color")
                 .setItems(options) { _, which ->
                     AppPrefs.setWallpaper(this, values[which])
-                    findViewById<android.view.View>(R.id.root)
-                        .setBackgroundColor(android.graphics.Color.parseColor(values[which]))
+                    val root = findViewById<android.view.View>(R.id.root)
+                    if (values[which] == "SYSTEM") {
+                        val tv = android.util.TypedValue()
+                        theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
+                        root.setBackgroundColor(tv.data)
+                    } else {
+                        root.setBackgroundColor(android.graphics.Color.parseColor(values[which]))
+                    }
                 }
                 .show()
         }

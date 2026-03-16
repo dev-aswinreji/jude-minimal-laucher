@@ -8,8 +8,11 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.format.DateFormat
 import android.view.MotionEvent
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jude.minimallauncher.R
@@ -42,25 +45,39 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var date: TextView
     private lateinit var list: RecyclerView
     private lateinit var adapter: LauncherListAdapter
+    private lateinit var usage: TextView
+    private lateinit var search: EditText
     private var downY: Float = 0f
     private var downTime: Long = 0L
+    private var allApps: List<AppInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launcher)
 
         val root = findViewById<android.view.View>(R.id.root)
-        root.setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        val wp = AppPrefs.getWallpaper(this)
+        if (wp == "SYSTEM") {
+            val tv = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
+            root.setBackgroundColor(tv.data)
+        } else {
+            root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+        }
         if (AppPrefs.isMonochrome(this)) {
             root.alpha = 0.9f
         }
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
         if (AppPrefs.isHideStatusBar(this)) {
-            window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+            controller.hide(WindowInsetsCompat.Type.statusBars())
         } else {
-            window.decorView.systemUiVisibility = 0
+            controller.show(WindowInsetsCompat.Type.statusBars())
         }
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         clock = findViewById(R.id.clock)
         date = findViewById(R.id.date)
+        usage = findViewById(R.id.usage_summary)
+        search = findViewById(R.id.home_search)
         list = findViewById(R.id.app_list)
 
         list.layoutManager = LinearLayoutManager(this)
@@ -76,6 +93,20 @@ class LauncherActivity : AppCompatActivity() {
             startActivity(Intent(this, AllAppsActivity::class.java))
         }
 
+        findViewById<android.widget.Button>(R.id.focus_now).setOnClickListener {
+            val enabled = !AppPrefs.isFocusNow(this)
+            AppPrefs.setFocusNow(this, enabled)
+            loadApps()
+        }
+
+        search.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterApps(s?.toString().orEmpty())
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
 
         ensureUsageAccess()
     }
@@ -83,6 +114,7 @@ class LauncherActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateClock()
+        updateUsageSummary()
         loadApps()
     }
 
@@ -117,14 +149,14 @@ class LauncherActivity : AppCompatActivity() {
             return
         }
 
-        val focusMode = AppPrefs.isFocusMode(this)
+        val focusMode = AppPrefs.isFocusMode(this) || AppPrefs.isFocusActive(this)
         val favorites = AppPrefs.getFavorites(this)
         val emergency = AppPrefs.getEmergencyApps(this)
         val base = if (focusMode && favorites.isNotEmpty()) favorites else whitelist
         val merged = (base + emergency).toSet()
 
         val pm = packageManager
-        val apps = merged.mapNotNull { pkg ->
+        allApps = merged.mapNotNull { pkg ->
             try {
                 val info = pm.getApplicationInfo(pkg, 0)
                 val label = pm.getApplicationLabel(info).toString()
@@ -133,9 +165,11 @@ class LauncherActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 null
             }
-        }.sortedBy { it.label.lowercase(Locale.getDefault()) }
+        }.sortedWith(compareBy<AppInfo> {
+            if (favorites.contains(it.packageName)) 0 else 1
+        }.thenBy { it.label.lowercase(Locale.getDefault()) })
 
-        adapter.submit(apps)
+        filterApps(search.text?.toString().orEmpty())
     }
 
     private fun handleLaunch(packageName: String) {
@@ -182,6 +216,20 @@ class LauncherActivity : AppCompatActivity() {
         PinDialog.show(this, message) { ok ->
             if (ok) launchApp(packageName)
         }
+    }
+
+    private fun filterApps(query: String) {
+        val q = query.trim().lowercase(Locale.getDefault())
+        val items = if (q.isEmpty()) allApps else allApps.filter { it.label.lowercase(Locale.getDefault()).contains(q) }
+        adapter.submit(items)
+    }
+
+    private fun updateUsageSummary() {
+        val whitelist = AppPrefs.getWhitelistedPackages(this)
+        val total = whitelist.sumOf { pkg ->
+            UsageLimiter.getTodayUsageMinutes(this, pkg)
+        }
+        usage.text = "Today: ${total} min"
     }
 
     private fun launchApp(packageName: String) {

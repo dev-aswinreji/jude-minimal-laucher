@@ -52,6 +52,22 @@
         android:layout_marginTop="8dp" />
 
     <Button
+        android:id="@+id/focus_schedule"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set focus schedule"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/usage_screen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="App usage"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <Button
         android:id="@+id/set_pin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -3,6 +3,8 @@ package com.jude.minimallauncher.ui
 import android.os.Bundle
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jude.minimallauncher.R
@@ -40,15 +42,24 @@ class AllAppsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_all_apps)
 
         val root = findViewById<android.view.View>(R.id.root)
-        root.setBackgroundColor(android.graphics.Color.parseColor(AppPrefs.getWallpaper(this)))
+        val wp = AppPrefs.getWallpaper(this)
+        if (wp == "SYSTEM") {
+            val tv = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
+            root.setBackgroundColor(tv.data)
+        } else {
+            root.setBackgroundColor(android.graphics.Color.parseColor(wp))
+        }
         if (AppPrefs.isMonochrome(this)) {
             root.alpha = 0.9f
         }
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
         if (AppPrefs.isHideStatusBar(this)) {
-            window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+            controller.hide(WindowInsetsCompat.Type.statusBars())
         } else {
-            window.decorView.systemUiVisibility = 0
+            controller.show(WindowInsetsCompat.Type.statusBars())
         }
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         list = findViewById(R.id.all_apps_list)
         list.layoutManager = LinearLayoutManager(this)
         adapter = LauncherListAdapter { appInfo ->

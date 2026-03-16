@@ -15,6 +15,9 @@ object AppPrefs {
     private const val KEY_WALLPAPER = "wallpaper"
     private const val KEY_HIDE_STATUS = "hide_status"
     private const val KEY_MONO = "mono"
+    private const val KEY_FOCUS_NOW = "focus_now"
+    private const val KEY_FOCUS_START = "focus_start"
+    private const val KEY_FOCUS_END = "focus_end"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -75,6 +78,20 @@ object AppPrefs {
     fun isFocusMode(context: Context): Boolean =
         prefs(context).getBoolean(KEY_FOCUS_MODE, false)
 
+    fun isFocusActive(context: Context): Boolean {
+        if (isFocusNow(context)) return true
+        val (start, end) = getFocusSchedule(context)
+        if (start < 0 || end < 0) return false
+        val cal = java.util.Calendar.getInstance()
+        val minutes = cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE)
+        return if (start <= end) {
+            minutes in start..end
+        } else {
+            // overnight range
+            minutes >= start || minutes <= end
+        }
+    }
+
     fun setFocusMode(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_FOCUS_MODE, enabled).apply()
     }
@@ -84,7 +101,7 @@ object AppPrefs {
     }
 
     fun getWallpaper(context: Context): String =
-        prefs(context).getString(KEY_WALLPAPER, "#FFFFFF") ?: "#FFFFFF"
+        prefs(context).getString(KEY_WALLPAPER, "SYSTEM") ?: "SYSTEM"
 
     fun setHideStatusBar(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_HIDE_STATUS, enabled).apply()
@@ -99,4 +116,24 @@ object AppPrefs {
 
     fun isMonochrome(context: Context): Boolean =
         prefs(context).getBoolean(KEY_MONO, false)
+
+    fun setFocusNow(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_FOCUS_NOW, enabled).apply()
+    }
+
+    fun isFocusNow(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FOCUS_NOW, false)
+
+    fun setFocusSchedule(context: Context, startMinutes: Int, endMinutes: Int) {
+        prefs(context).edit()
+            .putInt(KEY_FOCUS_START, startMinutes)
+            .putInt(KEY_FOCUS_END, endMinutes)
+            .apply()
+    }
+
+    fun getFocusSchedule(context: Context): Pair<Int, Int> {
+        val start = prefs(context).getInt(KEY_FOCUS_START, -1)
+        val end = prefs(context).getInt(KEY_FOCUS_END, -1)
+        return start to end
+    }
 }

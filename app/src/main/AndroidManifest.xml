@@ -12,12 +12,13 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="jude-minimal-laucher"
+        android:label=" "
         android:theme="@style/Theme.MinimalLauncher"
         tools:targetApi="35">
 
         <activity
             android:name=".ui.LauncherActivity"
+            android:label=" "
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
@@ -33,6 +34,10 @@
 
         <activity
             android:name=".ui.AllAppsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.UsageActivity"
             android:exported="false" />
 
         <service
